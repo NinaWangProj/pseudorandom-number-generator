@@ -5,10 +5,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class UniformityTestHarness {
-    public static void RunTest(int seed, int leftBound, int rightBound, int runDepth, String filePah) throws FileNotFoundException {
+    public static void RunTest(int seed, int leftBound, int rightBound, int runDepth, String filePah, PseudoRandomNumberGenerator RNG
+    ) throws FileNotFoundException {
         int numOfRandomNumbers = (int)Math.pow(rightBound - leftBound, runDepth) + runDepth -1;
 
-        LinearCongruentialGenerator RNG = new LinearCongruentialGenerator(seed,leftBound,rightBound);
         int[] randomInts = new int[numOfRandomNumbers];
         //HashMap<runDepth, HashMap<randomInt, frequency>>
         HashMap<Integer, HashMap<String,Integer>> randomIntFrequencyMap = new HashMap<>();
@@ -29,7 +29,7 @@ public class UniformityTestHarness {
                 System.arraycopy(randomInts,sourceCopyIndex+adjustedRunDepth-j,copiedRandomInts,0, j);
                 String runNumber = IntStream.of(copiedRandomInts)
                         .mapToObj(Integer::toString)
-                        .collect(Collectors.joining(", "));
+                        .collect(Collectors.joining(","));
 
                 if(!randomIntFrequencyMap.containsKey(j)) {
                     randomIntFrequencyMap.put(j,new HashMap<>());

@@ -11,6 +11,7 @@ public class Main {
         int runDepth = 2;
         String frequencyTableFilePath = "C:\\Users\\nwang\\IdeaProjects\\Pseudorandom_Number_Generator\\frequencyTable\\frequncyTable.csv";
 
-        UniformityTestHarness.RunTest(seed,leftBound,rightBound,runDepth,frequencyTableFilePath);
+        LinearCongruentialGenerator RNG = new LinearCongruentialGenerator(seed,leftBound,rightBound);
+        UniformityTestHarness.RunTest(seed,leftBound,rightBound,runDepth,frequencyTableFilePath,RNG);
     }
 }
