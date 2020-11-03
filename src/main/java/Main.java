@@ -9,9 +9,11 @@ public class Main {
         int rightBound = 3;
         int seed = 1;
         int runDepth = 2;
-        String frequencyTableFilePath = "C:\\Users\\nwang\\IdeaProjects\\Pseudorandom_Number_Generator\\frequencyTable\\frequncyTable.csv";
+        String relativePath = "./frequncyTable.csv";
+        //String frequencyTableFilePath = "C:\\Users\\nwang\\IdeaProjects\\Pseudorandom_Number_Generator\\frequencyTable\\frequncyTable.csv";
 
         LinearCongruentialGenerator RNG = new LinearCongruentialGenerator(seed,leftBound,rightBound);
-        UniformityTestHarness.RunTest(seed,leftBound,rightBound,runDepth,frequencyTableFilePath,RNG);
+
+        UniformityTestHarness.RunTest(seed,leftBound,rightBound,runDepth,relativePath,RNG);
     }
 }
