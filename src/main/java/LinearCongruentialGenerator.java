@@ -1,7 +1,7 @@
 
 
 
-public class RandomNumberGenerator {
+public class LinearCongruentialGenerator implements PseudoRandomNumberGenerator {
     private int a;
     private int b;
     private int m;
@@ -10,7 +10,7 @@ public class RandomNumberGenerator {
     private int rightBound;
     private int currentRandomNumber;
 
-    public RandomNumberGenerator(int seed, int leftBound, int rightBound) {
+    public LinearCongruentialGenerator(int seed, int leftBound, int rightBound) {
         this.a = 11;
         this.b = 37;
         this.m = rightBound-leftBound;
