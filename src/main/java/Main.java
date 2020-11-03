@@ -9,7 +9,8 @@ public class Main {
         int rightBound = 3;
         int seed = 1;
         int runDepth = 2;
+        String frequencyTableFilePath = "C:\\Users\\nwang\\IdeaProjects\\Pseudorandom_Number_Generator\\frequencyTable\\frequncyTable.csv";
 
-        UniformityTestHarness.RunTest(seed,leftBound,rightBound,runDepth);
+        UniformityTestHarness.RunTest(seed,leftBound,rightBound,runDepth,frequencyTableFilePath);
     }
 }
