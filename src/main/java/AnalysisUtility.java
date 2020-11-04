@@ -25,16 +25,11 @@ public class AnalysisUtility {
         return std;
     }
 
-    public static void PrintRunNumbers(HashMap<Integer, HashMap<int[],Integer>> randomIntFrequencyMap,
-                                       HashMap<Integer, ArrayList<int[]>> runNumbersMap, int runDepth) {
+    public static void PrintRunNumbers(HashMap<Integer, HashMap<String,Integer>> randomIntFrequencyMap,
+                                       HashMap<Integer, ArrayList<String>> runNumbersMap, int runDepth) {
         for(int k = 1; k <= runDepth; k++) {
-
-            for (int[] runNumber : runNumbersMap.get(k)) {
-                String runNumberString = "";
-                for(int i = 0; i < runNumber.length; i++) {
-                    runNumberString = runNumberString + runNumber[i] + ", ";
-                }
-                System.out.println(runNumberString);
+            for (String runNumber : runNumbersMap.get(k)) {
+                System.out.println(runNumber);
             }
             Collection<Integer> frequencies = randomIntFrequencyMap.get(k).values();
             double mean = AnalysisUtility.CalculateAverage(frequencies);

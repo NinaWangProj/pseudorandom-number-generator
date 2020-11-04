@@ -10,10 +10,10 @@ public class LinearCongruentialGenerator implements PseudoRandomNumberGenerator 
     private int rightBound;
     private int currentRandomNumber;
 
-    public LinearCongruentialGenerator(int seed, int leftBound, int rightBound) {
-        this.a = 11;
-        this.b = 37;
-        this.m = rightBound-leftBound;
+    public LinearCongruentialGenerator(int seed, int a, int b, int m, int leftBound, int rightBound) {
+        this.a = a;
+        this.b = b;
+        this.m = m;
         this.seed = seed;
         this.leftBound = leftBound;
         this.rightBound = rightBound;
@@ -21,8 +21,10 @@ public class LinearCongruentialGenerator implements PseudoRandomNumberGenerator 
     }
 
     public int GetNext() {
-        int nextRandomNumber = (a * currentRandomNumber + b) % m + leftBound;
+        int nextRandomNumber = (a * currentRandomNumber + b) % m;
         currentRandomNumber = nextRandomNumber;
-        return nextRandomNumber;
+        int test =  ((nextRandomNumber - nextRandomNumber % (rightBound - leftBound)) /
+                (rightBound - leftBound)) % (rightBound - leftBound) + leftBound;
+        return test;
     }
 }

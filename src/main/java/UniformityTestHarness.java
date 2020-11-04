@@ -5,9 +5,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class UniformityTestHarness {
-    public static void RunTest(int seed, int leftBound, int rightBound, int runDepth, String filePah, PseudoRandomNumberGenerator RNG
+    public static void RunTest(int seed, int numOfRandomNumbers,int leftBound, int rightBound, int runDepth, String filePah, PseudoRandomNumberGenerator RNG
     ) throws FileNotFoundException {
-        int numOfRandomNumbers = (int)Math.pow(rightBound - leftBound, runDepth) + runDepth -1;
+        //int numOfRandomNumbers = (int)Math.pow(rightBound - leftBound, runDepth) + runDepth -1;
 
         int[] randomInts = new int[numOfRandomNumbers];
         //HashMap<runDepth, HashMap<randomInt, frequency>>
@@ -25,9 +25,9 @@ public class UniformityTestHarness {
             }
 
             for(int j = adjustedRunDepth; j >= 1; j--) {
-                int[] copiedRandomInts = new int[j];
-                System.arraycopy(randomInts,sourceCopyIndex+adjustedRunDepth-j,copiedRandomInts,0, j);
-                String runNumber = IntStream.of(copiedRandomInts)
+                int[] subSequenceArray = new int[j];
+                System.arraycopy(randomInts,sourceCopyIndex+adjustedRunDepth-j,subSequenceArray,0, j);
+                String subSequence = IntStream.of(subSequenceArray)
                         .mapToObj(Integer::toString)
                         .collect(Collectors.joining(","));
 
@@ -37,24 +37,23 @@ public class UniformityTestHarness {
 
                 HashMap<String,Integer> frequencyMapForGivenDepth = randomIntFrequencyMap.get(j);
 
-                if(!frequencyMapForGivenDepth.containsKey(runNumber)) {
-                    frequencyMapForGivenDepth.put(runNumber, 0);
+                if(!frequencyMapForGivenDepth.containsKey(subSequence)) {
+                    frequencyMapForGivenDepth.put(subSequence, 0);
                 }
 
-                frequencyMapForGivenDepth.put(runNumber, frequencyMapForGivenDepth.get(runNumber) + 1);
+                frequencyMapForGivenDepth.put(subSequence, frequencyMapForGivenDepth.get(subSequence) + 1);
 
                 //for printing purpose
                 if(!runNumbersMap.containsKey(j)) {
                     runNumbersMap.put(j,new ArrayList<>());
                 }
-                if(!runNumbersMap.get(j).contains(runNumber)) {
-                    runNumbersMap.get(j).add(runNumber);
-                }
+                runNumbersMap.get(j).add(subSequence);
             }
 
             if(i >= runDepth -1)
                 sourceCopyIndex += 1;
         }
+        AnalysisUtility.PrintRunNumbers(randomIntFrequencyMap,runNumbersMap,runDepth);
         AnalysisUtility.PrintStats(randomIntFrequencyMap, runDepth);
         AnalysisUtility.WriteFrequencyMapToFile(filePah, randomIntFrequencyMap);
     }
