@@ -1,3 +1,5 @@
+package Utility;
+
 import com.opencsv.bean.CsvBindByName;
 
 public class FrequencyMapRow {

@@ -1,6 +1,7 @@
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import PRNG.LinearCongruentialGenerator;
+import TestingHarness.GoodnessOfFitTest;
+import TestingHarness.KSTest;
+import TestingHarness.UniformityTestHarness;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -11,11 +12,13 @@ public class Main {
         int leftBound = 0;
         int rightBound = 10;
         int seed = 1;
-        int runDepth = 2;
+        int maxSubSequenceLength = 2;
         String relativePath = "./frequncyTable.csv";
+        GoodnessOfFitTest goodnessOfFitTest = new KSTest();
+        int numOfIteration = m;
 
         LinearCongruentialGenerator RNG = new LinearCongruentialGenerator(seed, a, b, m, leftBound,rightBound);
 
-        UniformityTestHarness.RunTest(seed,m,leftBound,rightBound,runDepth,relativePath,RNG);
+        UniformityTestHarness.RunTest(RNG,m,maxSubSequenceLength,relativePath,goodnessOfFitTest);
     }
 }

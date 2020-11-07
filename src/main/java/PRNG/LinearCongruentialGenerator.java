@@ -1,4 +1,4 @@
-
+package PRNG;
 
 
 public class LinearCongruentialGenerator implements PseudoRandomNumberGenerator {
@@ -23,8 +23,21 @@ public class LinearCongruentialGenerator implements PseudoRandomNumberGenerator 
     public int GetNext() {
         int nextRandomNumber = (a * currentRandomNumber + b) % m;
         currentRandomNumber = nextRandomNumber;
-        int test =  ((nextRandomNumber - nextRandomNumber % (rightBound - leftBound)) /
-                (rightBound - leftBound)) % (rightBound - leftBound) + leftBound;
-        return test;
+        int rangeSize = rightBound - leftBound;
+        int normalizedRandomNumber =  ((nextRandomNumber - nextRandomNumber % rangeSize) /
+                rangeSize) % rangeSize + leftBound;
+        return normalizedRandomNumber;
+    }
+
+    public int getSeed() {
+        return seed;
+    }
+
+    public int getLeftBound() {
+        return leftBound;
+    }
+
+    public int getRightBound() {
+        return rightBound;
     }
 }
