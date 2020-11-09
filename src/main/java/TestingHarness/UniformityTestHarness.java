@@ -3,68 +3,73 @@ package TestingHarness;
 import PRNG.PseudoRandomNumberGenerator;
 import Utility.AnalysisUtility;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
+import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
 public class UniformityTestHarness {
     public static void RunTest(PseudoRandomNumberGenerator RNG,int numOfIteration, int maxSubSequenceLength, String filePah,
                                GoodnessOfFitTest goodnessOfFitTest) throws FileNotFoundException {
         //generate rng and populate sub-sequence map
         //HashMap<SubSequenceLength, HashMap<subSequence, frequency>>
-        HashMap<Integer, HashMap<String,Integer>> subSequenceFrequencyMap = new HashMap<>();
-        HashMap<Integer,ArrayList<String>> subSequenceMap = new HashMap<>();
-        List<Integer> previousMaxLengthSubSequence = new ArrayList<>();
+        SortedMap<Integer, SortedMap<SubSequence,Integer>> subSequenceFrequencyMap = new TreeMap<>();
+        SortedMap<Integer,ArrayList<SubSequence>> subSequenceMap = new TreeMap<>();
+        List<Integer> lastElementInSequence = new ArrayList<>();
+        int RNGRange = RNG.getRightBound() - RNG.getLeftBound();
 
         for(int i = 0; i < numOfIteration; i++) {
             //generate one random integer
             int randomInt = RNG.GetNext();
+            lastElementInSequence.add(randomInt);
+
+            //keep subSequence length within max length
+            if(lastElementInSequence.size() > maxSubSequenceLength) {
+                lastElementInSequence.remove(0);
+            }
 
             //store all new subSequence to map
-            GenerateNewSubsequences(previousMaxLengthSubSequence, randomInt, maxSubSequenceLength,
-                    subSequenceFrequencyMap, subSequenceMap);
+            GenerateNewSubsequences(lastElementInSequence, randomInt,
+                    subSequenceFrequencyMap, subSequenceMap, RNGRange);
         }
 
         //perform goodnessOfFitTest for each sub-sequence length
         // to see how close our random numbers follows the theoretical uniform distribution
-        HashMap<Integer,Double> p_valueMap = RunGoodnessToFitTests(goodnessOfFitTest,RNG,maxSubSequenceLength,
+        SortedMap<Integer,Double> p_valueMap = RunGoodnessOfFitTests(goodnessOfFitTest,RNG,maxSubSequenceLength,
                 subSequenceFrequencyMap);
 
         //output stats:
-        AnalysisUtility.PrintRunNumbers(subSequenceFrequencyMap,subSequenceMap,maxSubSequenceLength);
+        AnalysisUtility.PrintSubSequences(subSequenceMap);
         AnalysisUtility.PrintStats(subSequenceFrequencyMap, maxSubSequenceLength);
         AnalysisUtility.WriteFrequencyMapToFile(filePah, subSequenceFrequencyMap);
+        AnalysisUtility.PrintPValues(p_valueMap);
+
     }
 
-    private static void GenerateNewSubsequences(List<Integer> previousMaxLengthSubSequence, int randomInt,
-                                        int maxSubSequenceLength,HashMap<Integer, HashMap<SubSequence,Integer>> subSequenceFrequencyMap,
-                                               HashMap<Integer,ArrayList<SubSequence>> subSequenceMap) {
-        previousMaxLengthSubSequence.add(randomInt);
-        List<Integer> currentMaxLengthSubSequence = previousMaxLengthSubSequence;
+    public static void GenerateNewSubsequences(List<Integer> lastElementInSequence, int randomInt,
+                                        SortedMap<Integer, SortedMap<SubSequence,Integer>> subSequenceFrequencyMap,
+                                                SortedMap<Integer,ArrayList<SubSequence>> subSequenceMap,
+                                                int RNGRangeSize) {
+        int sequenceLength = lastElementInSequence.size();
+        int[] baseSequence = lastElementInSequence.stream().mapToInt(i->i).toArray();
 
-        //keep subSequence length within max length
-        if(currentMaxLengthSubSequence.size() > maxSubSequenceLength) {
-            currentMaxLengthSubSequence.remove(0);
-        }
+        for(int subSequenceLength = 1; subSequenceLength <= sequenceLength; subSequenceLength ++) {
 
-        for(int subSequenceLength = 1; subSequenceLength <= maxSubSequenceLength; subSequenceLength ++) {
-            String subSequence = currentMaxLengthSubSequence.subList(0,subSequenceLength-1).stream()
-                    .map(String::valueOf)
-                    .collect(Collectors.joining(","));
+            //create subSequence object
+            int[] subSequenceArray = new int[subSequenceLength];
+            System.arraycopy(baseSequence,sequenceLength-subSequenceLength,
+                    subSequenceArray,0,subSequenceLength);
+            SubSequence subSequence = new SubSequence(subSequenceArray,RNGRangeSize);
 
+            //store subsequence to Map
             if (!subSequenceFrequencyMap.containsKey(subSequenceLength)) {
-                subSequenceFrequencyMap.put(subSequenceLength, new HashMap<>());
+                subSequenceFrequencyMap.put(subSequenceLength, new TreeMap<>());
             }
-
-            HashMap<String, Integer> frequencyMapForGivenDepth = subSequenceFrequencyMap.get(subSequenceLength);
-
-            if (!frequencyMapForGivenDepth.containsKey(subSequence)) {
-                frequencyMapForGivenDepth.put(subSequence, 0);
+            SortedMap<SubSequence, Integer> frequencyMap = subSequenceFrequencyMap.get(subSequenceLength);
+            if (!frequencyMap.containsKey(subSequence)) {
+                frequencyMap.put(subSequence, 0);
             }
-            frequencyMapForGivenDepth.put(subSequence, frequencyMapForGivenDepth.get(subSequence) + 1);
+            frequencyMap.put(subSequence, frequencyMap.get(subSequence) + 1);
 
             //for debugging purpose; print out all sub sequence
             if (!subSequenceMap.containsKey(subSequenceLength)) {
@@ -75,12 +80,12 @@ public class UniformityTestHarness {
     }
 
 
-    private static HashMap<Integer,Double> RunGoodnessToFitTests(GoodnessOfFitTest goodnessOfFitTest, PseudoRandomNumberGenerator RNG,
+    public static SortedMap<Integer,Double> RunGoodnessOfFitTests(GoodnessOfFitTest goodnessOfFitTest, PseudoRandomNumberGenerator RNG,
                                                                  int maxSubSequenceLength,
-                                                                 HashMap<Integer, HashMap<String,Integer>> subSequenceFrequencyMap) {
-        HashMap<Integer,Double> p_valueMap = new HashMap<>();
-        for(int subSequenceLength = 1; subSequenceLength < maxSubSequenceLength; subSequenceLength++) {
-            HashMap<String,Integer> sampleFrequencyMap = subSequenceFrequencyMap.get(subSequenceLength);
+                                                                 SortedMap<Integer, SortedMap<SubSequence,Integer>> subSequenceFrequencyMap) {
+        SortedMap<Integer,Double> p_valueMap = new TreeMap<>();
+        for(int subSequenceLength = 1; subSequenceLength <= maxSubSequenceLength; subSequenceLength++) {
+            SortedMap<SubSequence,Integer> sampleFrequencyMap = subSequenceFrequencyMap.get(subSequenceLength);
             double upperBound = Math.pow((RNG.getRightBound() - RNG.getLeftBound()),subSequenceLength);
             UniformRealDistribution theoreticalDist = new UniformRealDistribution(
                     0,upperBound);

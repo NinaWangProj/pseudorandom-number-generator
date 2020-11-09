@@ -1,7 +1,10 @@
 package Utility;
 
+import TestingHarness.SubSequence;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
+import org.apache.commons.math3.distribution.UniformRealDistribution;
+import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -24,23 +27,30 @@ public class AnalysisUtility {
         return std;
     }
 
-    public static void PrintRunNumbers(HashMap<Integer, HashMap<String,Integer>> randomIntFrequencyMap,
-                                       HashMap<Integer, ArrayList<String>> runNumbersMap, int runDepth) {
-        for(int k = 1; k <= runDepth; k++) {
-            for (String runNumber : runNumbersMap.get(k)) {
-                System.out.println(runNumber);
+    public static void PrintSubSequences(SortedMap<Integer, ArrayList<SubSequence>> subSequenceMap) {
+        for(SortedMap.Entry<Integer, ArrayList<SubSequence>> entry : subSequenceMap.entrySet()) {
+            double[] samples = new double[100];
+            int i = 0;
+            for(SubSequence subSequence : entry.getValue()) {
+                System.out.println(subSequence.getString());
+                    samples[i] = subSequence.getIntCode();
+                    i++;
             }
-            Collection<Integer> frequencies = randomIntFrequencyMap.get(k).values();
-            double mean = AnalysisUtility.CalculateAverage(frequencies);
-            double std = AnalysisUtility.CalculateStandardDeviation(frequencies, mean);
-            System.out.println("frequency mean for run depth " + k + " is: " + mean);
-            System.out.println("frequency std for run depth " + k + " is: " + std);
+            //delete later:
+            //testing using library:
+            double upperBound = Math.pow((10),entry.getKey());
+            UniformRealDistribution theoreticalDist = new UniformRealDistribution(
+                    0,upperBound);
+            KolmogorovSmirnovTest ksTest = new KolmogorovSmirnovTest();
+
+            double p_value = ksTest.kolmogorovSmirnovTest(theoreticalDist,samples,true);
+            double test = 0;
         }
     }
 
-    public static void PrintStats(HashMap<Integer, HashMap<String,Integer>> randomIntFrequencyMap, int runDepth) {
+    public static void PrintStats(SortedMap<Integer, SortedMap<SubSequence,Integer>> subSequenceFrequencyMap, int runDepth) {
         for(int k = 1; k <= runDepth; k++) {
-            Collection<Integer> frequencies = randomIntFrequencyMap.get(k).values();
+            Collection<Integer> frequencies = subSequenceFrequencyMap.get(k).values();
             double mean = AnalysisUtility.CalculateAverage(frequencies);
             double std = AnalysisUtility.CalculateStandardDeviation(frequencies, mean);
             System.out.println("frequency mean for run depth " + k + " is: " + mean);
@@ -48,17 +58,18 @@ public class AnalysisUtility {
         }
     }
 
-    public static void WriteFrequencyMapToFile(String filePath,HashMap<Integer, HashMap<String,Integer>> randomIntFrequencyMap) throws FileNotFoundException {
+    public static void WriteFrequencyMapToFile(String filePath,SortedMap<Integer, SortedMap<SubSequence,Integer>> subSequenceFrequencyMap) throws FileNotFoundException {
         FileOutputStream stream = new FileOutputStream(filePath);
         OutputStreamWriter writer = new OutputStreamWriter(stream);
 
         List<FrequencyMapRow> frequencyTable = new ArrayList<>();
 
-        for(Map.Entry<Integer, HashMap<String,Integer>> entry : randomIntFrequencyMap.entrySet()) {
-            int runDepth = entry.getKey();
+        for(SortedMap.Entry<Integer, SortedMap<SubSequence,Integer>> entry : subSequenceFrequencyMap.entrySet()) {
+            int subSequenceLength = entry.getKey();
 
-            for(Map.Entry<String,Integer> runNumEntry : entry.getValue().entrySet()) {
-                FrequencyMapRow frequencyMapRow = new FrequencyMapRow(runDepth,runNumEntry.getKey(),runNumEntry.getValue());
+            for(Map.Entry<SubSequence,Integer> frequencyEntry : entry.getValue().entrySet()) {
+                FrequencyMapRow frequencyMapRow = new FrequencyMapRow(subSequenceLength,
+                        frequencyEntry.getKey().getString(),frequencyEntry.getValue());
                 frequencyTable.add(frequencyMapRow);
             }
         }
@@ -70,6 +81,12 @@ public class AnalysisUtility {
             writer.close();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void PrintPValues(SortedMap<Integer,Double> pValues) {
+        for(Map.Entry<Integer, Double> entry : pValues.entrySet()) {
+            System.out.println("for sub-sequence length " + entry.getKey() + ", the p-value is: " + entry.getValue());
         }
     }
 }

@@ -1,4 +1,5 @@
 import PRNG.LinearCongruentialGenerator;
+import PRNG.PseudoRandomNumberGenerator;
 import TestingHarness.GoodnessOfFitTest;
 import TestingHarness.KSTest;
 import TestingHarness.UniformityTestHarness;
@@ -15,10 +16,10 @@ public class Main {
         int maxSubSequenceLength = 2;
         String relativePath = "./frequncyTable.csv";
         GoodnessOfFitTest goodnessOfFitTest = new KSTest();
-        int numOfIteration = m;
+        int numOfIteration = 100;
 
-        LinearCongruentialGenerator RNG = new LinearCongruentialGenerator(seed, a, b, m, leftBound,rightBound);
+        PseudoRandomNumberGenerator RNG = new LinearCongruentialGenerator(seed, a, b, m, leftBound,rightBound);
 
-        UniformityTestHarness.RunTest(RNG,m,maxSubSequenceLength,relativePath,goodnessOfFitTest);
+        UniformityTestHarness.RunTest(RNG,numOfIteration,maxSubSequenceLength,relativePath,goodnessOfFitTest);
     }
 }
