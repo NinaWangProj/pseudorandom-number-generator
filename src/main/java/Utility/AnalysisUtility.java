@@ -3,18 +3,15 @@ package Utility;
 import TestingHarness.SubSequence;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
-import org.apache.commons.math3.distribution.UniformRealDistribution;
-import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class AnalysisUtility {
 
     public static double CalculateAverage(Collection<Integer> frequencies) {
-        double averageFrequency = frequencies.stream().mapToInt(val -> val).average().orElse(-1);
+        double averageFrequency = frequencies.stream().mapToInt(val -> val).filter(val -> val>0).average().orElse(-1);
 
         return averageFrequency;
     }
@@ -36,15 +33,6 @@ public class AnalysisUtility {
                     samples[i] = subSequence.getIntCode();
                     i++;
             }
-            //delete later:
-            //testing using library:
-            double upperBound = Math.pow((10),entry.getKey());
-            UniformRealDistribution theoreticalDist = new UniformRealDistribution(
-                    0,upperBound);
-            KolmogorovSmirnovTest ksTest = new KolmogorovSmirnovTest();
-
-            double p_value = ksTest.kolmogorovSmirnovTest(theoreticalDist,samples,true);
-            double test = 0;
         }
     }
 
@@ -88,5 +76,26 @@ public class AnalysisUtility {
         for(Map.Entry<Integer, Double> entry : pValues.entrySet()) {
             System.out.println("for sub-sequence length " + entry.getKey() + ", the p-value is: " + entry.getValue());
         }
+    }
+
+    public static void WriteOutParametersAndPValues(HashMap<int[],SortedMap<Integer,Double>> parametersAndPvalueMap)
+            throws IOException {
+        FileWriter writer = new FileWriter("./abmPvalues.csv");
+        String header = String.join(",","a","b","m","p_level1","p_level2");
+        writer.write(header);
+        writer.append("\n");
+
+        for(Map.Entry<int[],SortedMap<Integer,Double>> entry : parametersAndPvalueMap.entrySet()) {
+            String parameters = Arrays.stream(entry.getKey()).mapToObj(val -> String.valueOf(val)).
+                    collect(Collectors.joining(", "));
+            String outputRow = parameters;
+            for(Map.Entry<Integer,Double> pValueEntry : entry.getValue().entrySet()) {
+                double p_value = pValueEntry.getValue();
+                outputRow = String.join(",",outputRow,String.valueOf(p_value));
+            }
+            writer.write(outputRow);
+            writer.append("\n");
+        }
+        writer.close();
     }
 }

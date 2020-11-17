@@ -1,23 +1,17 @@
 import PRNG.LinearCongruentialGenerator;
 import PRNG.PseudoRandomNumberGenerator;
-import TestingHarness.GoodnessOfFitTest;
-import TestingHarness.KSTest;
-import TestingHarness.SubSequence;
-import TestingHarness.UniformityTestHarness;
+import TestingHarness.*;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
+import org.apache.commons.math3.stat.inference.ChiSquareTest;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.data.Offset;
-import org.assertj.core.data.Percentage;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
-public class KSTestUnitTest {
-     private SortedMap<Integer, SortedMap<SubSequence,Integer>> subSequenceFrequencyMap = new TreeMap<>();
+public class GoodnessOfFitTests {
+     private SortedMap<Integer, SortedMap<SubSequence,Integer>> subSequenceFrequencyMap;
      private SortedMap<Integer,ArrayList<SubSequence>> subSequenceMap = new TreeMap<>();
      private SortedMap<Integer, Double> p_values = new TreeMap();
 
@@ -36,13 +30,43 @@ public class KSTestUnitTest {
 
           PseudoRandomNumberGenerator RNG = new LinearCongruentialGenerator(seed, a, b, m, leftBound,rightBound);
 
+          subSequenceFrequencyMap = UniformityTestHarness.Init(RNG,maxSubSequenceLength);
           //create subsequence map
           CreateSubSequenceMap(RNG,numOfIteration,maxSubSequenceLength);
 
           p_values = UniformityTestHarness.RunGoodnessOfFitTests(goodnessOfFitTest,RNG,maxSubSequenceLength,
                   subSequenceFrequencyMap);
 
-          SortedMap<Integer,Double> expected_p_values = GenerateBaseline(rightBound,leftBound);
+          SortedMap<Integer,Double> expected_p_values = GenerateKSBaseline(rightBound,leftBound);
+
+          //compare p_values against baseline
+          for(SortedMap.Entry<Integer, Double> entry : expected_p_values.entrySet()) {
+               Assertions.assertThat(entry.getValue()).isCloseTo(p_values.get(entry.getKey()), Offset.offset(0.000001));
+          }
+     }
+
+     @Test
+     public void TestChiSquareAgainstThirdPartyLib() {
+          int a = 11;
+          int b = 37;
+          int m = 100;
+          int leftBound = 0;
+          int rightBound = 10;
+          int seed = 1;
+          int maxSubSequenceLength = 2;
+          String relativePath = "./frequncyTable.csv";
+          GoodnessOfFitTest goodnessOfFitTest = new TestingHarness.ChiSquareTest();
+          int numOfIterations = 100;
+
+          PseudoRandomNumberGenerator RNG = new LinearCongruentialGenerator(seed, a, b, m, leftBound,rightBound);
+          subSequenceFrequencyMap = UniformityTestHarness.Init(RNG,maxSubSequenceLength);
+          //create subsequence map
+          CreateSubSequenceMap(RNG,numOfIterations,maxSubSequenceLength);
+
+          p_values = UniformityTestHarness.RunGoodnessOfFitTests(goodnessOfFitTest,RNG,maxSubSequenceLength,
+                  subSequenceFrequencyMap);
+
+          SortedMap<Integer,Double> expected_p_values = GenerateChiSquareBaseline(rightBound,leftBound);
 
           //compare p_values against baseline
           for(SortedMap.Entry<Integer, Double> entry : expected_p_values.entrySet()) {
@@ -65,12 +89,12 @@ public class KSTestUnitTest {
                }
 
                //store all new subSequence to map
-               UniformityTestHarness.GenerateNewSubsequences(lastElementInSequence, randomInt,
+               UniformityTestHarness.GenerateNewSubsequences(lastElementInSequence,
                        subSequenceFrequencyMap, subSequenceMap, RNGRange);
           }
      }
 
-     private SortedMap<Integer,Double> GenerateBaseline(int rightBound, int leftBound) {
+     private SortedMap<Integer,Double> GenerateKSBaseline(int rightBound, int leftBound) {
           SortedMap<Integer,Double> expected_p_values = new TreeMap();
           for (SortedMap.Entry<Integer, ArrayList<SubSequence>> entry : subSequenceMap.entrySet()) {
                double[] samples = new double[entry.getValue().size()];
@@ -91,4 +115,27 @@ public class KSTestUnitTest {
           }
           return  expected_p_values;
      }
+
+     private SortedMap<Integer,Double> GenerateChiSquareBaseline(int rightBound, int leftBound) {
+          SortedMap<Integer,Double> expected_p_values = new TreeMap();
+
+          for (SortedMap.Entry<Integer, SortedMap<SubSequence,Integer>> entry : subSequenceFrequencyMap.entrySet()) {
+               int numOfSamples = entry.getValue().values().stream().mapToInt(val -> val).sum();
+               //Observed frequencies:
+               long[] observedFrequencies = entry.getValue().values().stream()
+                       .mapToLong(val ->val).toArray();
+
+               double upperBound = Math.pow((rightBound-leftBound), entry.getKey());
+               double[] expectedFrequencies = new double[(int)upperBound];
+               Arrays.fill(expectedFrequencies,1/upperBound * numOfSamples);
+
+               //Expected Results from third part lib
+               ChiSquareTest chiSquareTest = new ChiSquareTest();
+               double p_value = chiSquareTest.chiSquareTest(expectedFrequencies,observedFrequencies);
+               expected_p_values.put(entry.getKey(),p_value);
+          }
+          return  expected_p_values;
+     }
 }
+
+
