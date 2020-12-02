@@ -1,4 +1,6 @@
+import PRNG.LeadingDigitMapDownFactory;
 import PRNG.LinearCongruentialGenerator;
+import PRNG.MapDownFactory;
 import PRNG.PseudoRandomNumberGenerator;
 import TestingHarness.*;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
@@ -15,7 +17,6 @@ public class GoodnessOfFitTests {
      private SortedMap<Integer,ArrayList<SubSequence>> subSequenceMap = new TreeMap<>();
      private SortedMap<Integer, Double> p_values = new TreeMap();
 
-     @Test
      public void TestKSAgainstThirdPartyLib() {
           int a = 11;
           int b = 37;
@@ -27,8 +28,10 @@ public class GoodnessOfFitTests {
           String relativePath = "./frequncyTable.csv";
           GoodnessOfFitTest goodnessOfFitTest = new KSTest();
           int numOfIteration = 100;
+          MapDownFactory mapDownFactory = new LeadingDigitMapDownFactory();
 
-          PseudoRandomNumberGenerator RNG = new LinearCongruentialGenerator(seed, a, b, m, leftBound,rightBound);
+          PseudoRandomNumberGenerator RNG = new LinearCongruentialGenerator(seed, a, b, m,
+                  leftBound,rightBound,mapDownFactory);
 
           subSequenceFrequencyMap = UniformityTestHarness.Init(RNG,maxSubSequenceLength);
           //create subsequence map
@@ -47,18 +50,21 @@ public class GoodnessOfFitTests {
 
      @Test
      public void TestChiSquareAgainstThirdPartyLib() {
-          int a = 11;
-          int b = 37;
-          int m = 100;
+          int a = 55;
+          int b = 127;
+          int m = 101;
           int leftBound = 0;
           int rightBound = 10;
           int seed = 1;
-          int maxSubSequenceLength = 2;
+          int maxSubSequenceLength = 3;
           String relativePath = "./frequncyTable.csv";
           GoodnessOfFitTest goodnessOfFitTest = new TestingHarness.ChiSquareTest();
-          int numOfIterations = 100;
+          int numOfIterations = 1000;
 
-          PseudoRandomNumberGenerator RNG = new LinearCongruentialGenerator(seed, a, b, m, leftBound,rightBound);
+          MapDownFactory mapDownFactory = new LeadingDigitMapDownFactory();
+
+          PseudoRandomNumberGenerator RNG = new LinearCongruentialGenerator(seed, a, b, m,
+                  leftBound,rightBound,mapDownFactory);
           subSequenceFrequencyMap = UniformityTestHarness.Init(RNG,maxSubSequenceLength);
           //create subsequence map
           CreateSubSequenceMap(RNG,numOfIterations,maxSubSequenceLength);

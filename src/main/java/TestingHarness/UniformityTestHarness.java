@@ -39,8 +39,8 @@ public class UniformityTestHarness {
                 subSequenceFrequencyMap);
 
         //output stats:
-        AnalysisUtility.PrintSubSequences(subSequenceMap);
-        AnalysisUtility.PrintStats(subSequenceFrequencyMap, maxSubSequenceLength);
+        //AnalysisUtility.PrintSubSequences(subSequenceMap);
+        //AnalysisUtility.PrintStats(subSequenceFrequencyMap, maxSubSequenceLength);
         AnalysisUtility.WriteFrequencyMapToFile(filePah, subSequenceFrequencyMap);
         AnalysisUtility.PrintPValues(p_valueMap);
 

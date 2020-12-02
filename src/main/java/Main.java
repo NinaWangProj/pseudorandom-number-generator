@@ -1,5 +1,4 @@
-import PRNG.LinearCongruentialGenerator;
-import PRNG.PseudoRandomNumberGenerator;
+import PRNG.*;
 import TestingHarness.ChiSquareTest;
 import TestingHarness.GoodnessOfFitTest;
 import TestingHarness.UniformityTestHarness;
@@ -11,33 +10,31 @@ import java.util.SortedMap;
 public class Main {
     public static void main(String[] args) throws Exception {
         //inclusive left bound and exclusive right bound
-        int leftBound = 0;
-        int rightBound = 10;
+        int lowerBound = 0;
+        int upperBound = 10000;
         int seed = 1;
-        int maxSubSequenceLength = 2;
+        int maxSubSequenceLength = 1;
         String relativePath = "./frequncyTable.csv";
         GoodnessOfFitTest goodnessOfFitTest = new ChiSquareTest();
-        int numOfIteration = 100;
+        int numOfIteration = 1600000;
 
         HashMap<int[],SortedMap<Integer,Double>> parametersAndPvalueMap = new HashMap<>();
+        MapDownFactory mapDownFactory = new Mod10KMapDownFactory();
 
-        for(int a = 55; a<=55; a++) {
-            for(int b = 127; b<= 127; b++) {
-                for(int m = 101; m<=101; m++) {
-                    PseudoRandomNumberGenerator RNG = new LinearCongruentialGenerator(seed, a, b, m, leftBound,rightBound);
+        for(int a = 10005; a<=10005; a++) {
+            for(int b = 3; b<= 3; b++) {
+                for(int m=134217728; m <= 134217728; m++) {
+                    PseudoRandomNumberGenerator RNG = new LinearCongruentialGenerator(seed, a, b,
+                            m, lowerBound,upperBound,mapDownFactory);
 
                     parametersAndPvalueMap.put(new int[]{a,b,m},
                             UniformityTestHarness.RunTest(RNG,numOfIteration,maxSubSequenceLength,relativePath,goodnessOfFitTest));
+                    //AnalysisUtility.PrintOriginalSequence(RNG.getOriginalSequence());
                 }
             }
         }
 
-        AnalysisUtility.WriteOutParametersAndPValues(parametersAndPvalueMap);
-/*
-        int a = 11;
-        int b = 37;
-        int m = 100;
 
-*/
+        AnalysisUtility.WriteOutParametersAndPValues(parametersAndPvalueMap,maxSubSequenceLength);
     }
 }

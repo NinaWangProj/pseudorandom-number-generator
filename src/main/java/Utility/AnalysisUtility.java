@@ -1,5 +1,6 @@
 package Utility;
 
+import PRNG.PseudoRandomNumberGenerator;
 import TestingHarness.SubSequence;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
@@ -26,7 +27,7 @@ public class AnalysisUtility {
 
     public static void PrintSubSequences(SortedMap<Integer, ArrayList<SubSequence>> subSequenceMap) {
         for(SortedMap.Entry<Integer, ArrayList<SubSequence>> entry : subSequenceMap.entrySet()) {
-            double[] samples = new double[100];
+            double[] samples = new double[entry.getValue().size()];
             int i = 0;
             for(SubSequence subSequence : entry.getValue()) {
                 System.out.println(subSequence.getString());
@@ -36,6 +37,13 @@ public class AnalysisUtility {
         }
     }
 
+    public static void PrintOriginalSequence(List<Integer> originalSequence) {
+        System.out.println("original sequence:");
+
+        for(Integer i : originalSequence) {
+            System.out.println(i.toString());
+        }
+    }
     public static void PrintStats(SortedMap<Integer, SortedMap<SubSequence,Integer>> subSequenceFrequencyMap, int runDepth) {
         for(int k = 1; k <= runDepth; k++) {
             Collection<Integer> frequencies = subSequenceFrequencyMap.get(k).values();
@@ -78,10 +86,18 @@ public class AnalysisUtility {
         }
     }
 
-    public static void WriteOutParametersAndPValues(HashMap<int[],SortedMap<Integer,Double>> parametersAndPvalueMap)
+    public static void WriteOutParametersAndPValues(HashMap<int[],SortedMap<Integer,Double>> parametersAndPvalueMap,
+                                                    int maxSubsequenceLength)
             throws IOException {
         FileWriter writer = new FileWriter("./abmPvalues.csv");
-        String header = String.join(",","a","b","m","p_level1","p_level2");
+
+        String p_valuesHeader = "p_level1";
+        for(int i = 2; i <= maxSubsequenceLength; i++) {
+            String p_valueLevel = "p_level" + i;
+            p_valuesHeader = String.join(",", p_valuesHeader, p_valueLevel);
+        }
+
+        String header = String.join(",","a","b","m",p_valuesHeader);
         writer.write(header);
         writer.append("\n");
 
