@@ -18,7 +18,7 @@ public class DieHardTest {
         PseudoRandomNumberGenerator RNG = new LinearCongruentialGenerator(1,10001,3,134217728,
                 0,10000,new Mod10KMapDownFactory());
 
-        double p_value = DieHardMinimumDistanceSquareTest.RunTest(RNG);
+        double p_value = DieHardMinimumDistanceSquareTest.RunTest(RNG, true, "./coordinateGenerated.csv");
 
         //print out frequency map
         SortedMap<Integer, SortedMap<SubSequence,Integer>> frequencyMap = UniformityTestHarness.Init(RNG, 1);
