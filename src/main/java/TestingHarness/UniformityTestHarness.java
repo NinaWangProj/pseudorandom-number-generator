@@ -120,6 +120,7 @@ public class UniformityTestHarness {
                 }
             }
         }
+
         return subSequenceFrequencyMap;
     }
 }
