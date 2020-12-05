@@ -15,7 +15,7 @@ public class DieHardTest {
 
     @Test
     public void MinimumDistanceSquareTest() throws FileNotFoundException {
-        PseudoRandomNumberGenerator RNG = new LinearCongruentialGenerator(1,10001,3,134217728,
+        PseudoRandomNumberGenerator RNG = new LinearCongruentialGenerator(1,10039,3,100390001,
                 0,10000,new Mod10KMapDownFactory());
 
         double p_value = DieHardMinimumDistanceSquareTest.RunTest(RNG, true, "./coordinateGenerated.csv");

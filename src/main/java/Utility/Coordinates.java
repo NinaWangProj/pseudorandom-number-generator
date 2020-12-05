@@ -1,10 +1,10 @@
 package Utility;
 
 public class Coordinates {
-    private int xCoordinate;
-    private int yCoordinate;
+    private double xCoordinate;
+    private double yCoordinate;
 
-    public Coordinates(int xCoordinate, int yCoordinate) {
+    public Coordinates(double xCoordinate, double yCoordinate) {
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
     }
@@ -20,11 +20,11 @@ public class Coordinates {
         }
     }
 
-    public int getxCoordinate() {
+    public double getxCoordinate() {
         return xCoordinate;
     }
 
-    public int getyCoordinate() {
+    public double getyCoordinate() {
         return yCoordinate;
     }
 }
